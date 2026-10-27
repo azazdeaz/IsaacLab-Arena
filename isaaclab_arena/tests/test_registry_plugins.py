@@ -39,6 +39,8 @@ def install_plugins(tmp_path, monkeypatch):
     registry = AssetRegistry()
     monkeypatch.setattr(registry, "_components", dict(registry._components))
     monkeypatch.setattr(registries, "_assets_registered", False)
+    # Load the tests' plugins even if the shell turns plugins off; the registration above follows the shell.
+    monkeypatch.delenv("ISAACLAB_ARENA_DISABLE_PLUGIN_AUTOLOAD", raising=False)
     (tmp_path / "arena_test_plugin.py").write_text(PLUGIN_MODULE)
     monkeypatch.syspath_prepend(tmp_path)
 
@@ -73,4 +75,10 @@ def test_disabled_autoload_skips_plugins(install_plugins, monkeypatch):
 def test_failing_plugin_raises_naming_itself(install_plugins):
     install_plugins("arena_test_plugin_missing")
     with pytest.raises(ImportError, match="'test_plugin = arena_test_plugin_missing'"):
+        registries.ensure_assets_registered()
+
+
+def test_class_plugin_is_rejected(install_plugins):
+    install_plugins("arena_test_plugin:PluginAsset")
+    with pytest.raises(ImportError, match="expected a module or a function"):
         registries.ensure_assets_registered()

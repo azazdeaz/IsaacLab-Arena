@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+import inspect
 import os
 import random
 from importlib.metadata import entry_points
@@ -396,7 +397,8 @@ def ensure_assets_registered():
                 try:
                     # A module registers its components by being imported, a function by being called.
                     plugin = entry_point.load()
-                    if callable(plugin):
+                    if not inspect.ismodule(plugin):
+                        assert inspect.isfunction(plugin), f"expected a module or a function, got {plugin!r}"
                         plugin()
                 except Exception as e:
                     distribution = entry_point.dist.name if entry_point.dist else "an unknown distribution"

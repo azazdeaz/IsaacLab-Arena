@@ -192,13 +192,14 @@ An entry point that names a module, as above, registers its components by being 
 One that names a function, such as ``"my_package:register"``, has the function called.
 Once the package is installed, its components can be used by name wherever Arena looks them
 up, for example as the embodiment's ``registry_name`` in an environment spec.
-Environments are not loaded this way: an environment class still needs
+Environment lookups do not load plugins, so a plugin must not register an environment with
+``@register_environment``: an environment class still needs
 ``--external_environment_class_path``.
 Arena reads entry points from the installed package's metadata, so reinstall the package
 after adding one, even an editable install.
 
-A plugin must import without Isaac Sim running: the environment YAML loader validates
-registry names, and so loads the plugins, before Isaac Sim starts.
+A plugin must import without Isaac Sim running: tools that check an environment spec without
+Isaac Sim, such as a spec editor, look up its registry names and so load the plugins.
 Like Arena's own modules, a plugin must therefore not import ``carb``, ``omni`` or
 ``isaacsim`` at module level; import them inside the functions that need them.
 A config that needs a function from such a module, such as an event term, can name it as a
